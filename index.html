@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 
-<title>Modular frontend with NPM and pals</title>
+<title>Node at uber</title>
 
 <meta name="description" content="writing modular javascript">
 <meta name="author" content="Jake Verbaten">
@@ -79,32 +79,193 @@ document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.se
   <!-- Any section element inside of this container is displayed as a slide -->
   <div class="slides">
     <section class="slide-1">
-      <h2>Building high quality services at Uber</h2>
+      <h2>Node at uber</h2>
 
-      <h3><a href="http://twitter.com/raynos">@Raynos</a></h3>
+      <h3><a href="http://twitter.com/raynos">@Raynos (jakev)</a></h3>
     </section>
 
     <section class="slide-2">
-      <h2>Day one: The ironfist trial</h2>
+      <h2>What is node</h2>
 
       <ul>
-        <li>Build a simple proxy service</li>
-        <li>Deploy it to 50 machines</li>
-        <li>Do not go down, ever.</li>
+        <li>v8</li>
+        <li>libuv</li>
+        <li>A small networking library</li>
+        <li>npm</li>
       </ul>
     </section>
 
     <section>
     <section class="slide-3">
-      <h2>Just "productionize" it</h2>
+      <h2>Why use node</h2>
+    </section>
+    <section class="slide-4">
+      <h2>Why use node</h2>
 
-      <h3><a href="https://github.com/uber/logtron">logtron</a></h3>
+      <pre><code data-trim class="javascript">
+var http = require('http');
+
+http.createServer(function handleReq(req, res) {
+    res.end('hello world');
+}).listen(8080);
+      </code></pre>
+    </section>
+    <section class="slide-5">
+      <h2>Why use node</h2>
+
+      <pre><code data-trim class="javascript">
+var TChannel = require('tchannel');
+
+TChannel()
+    .register('hello', function handleReq(res, res) {
+        res.sendOk(null, 'hello world');
+    })
+    .listen(8080, '127.0.0.1')
+      </code></pre>
+
+    </section>
+    <section class="slide-6">
+      <h2>Why use node</h2>
+
       <ul>
-        <li>Logging info, warn and error.</li>
-        <li>Logging to a distributed Queue</li>
-        <li>Logging to an error reporting service</li>
+        <li>Great for networking glue</li>
+        <li>Great for distributed stateful programs</li>
+        <li>Pretty damn fast</li>
+        <li>First class support for monitoring+debugging</li>
       </ul>
     </section>
+    </section>
+    <section class="slide-7">
+      <h2>Node at uber</h2>
+
+      <ul>
+        <li>git clone &lt;project&gt;</li>
+        <li>npm install</li>
+        <li>npm test</li>
+        <li>vim .</li>
+      </ul>
+
+      <br><br>
+      <p>Works on EC2 and locally</p>
+    </section>
+    <section>
+    <section class="slide-8">
+      <h2>Node services at uber</h2>
+
+      <ul>
+        <li>Use `uber-standard` for linting</li>
+        <li>Use `npm run shrinkwrap` to update deps</li>
+        <li>Use `node server.js` to start services</li>
+        <li>Use `node test/index.js` to run tests</li>
+      </ul>
+    </section>
+    <section class="slide-9">
+      <h2>Node services at uber</h2>
+
+      <br>
+      <h4>Use `zero-config` to load config files</h4>
+
+      <pre><code data-trim class="javascript">
+var ZeroConfig = require('zero-config');
+
+var config = ZeroConfig(__dirname, {
+    dc: '/etc/uber/datacenter'
+});
+
+config.get('clients.ringpop.bootstrapFile')
+config.get('port')
+      </code></pre>
+    </section>
+    <section class="slide-10">
+      <h2>Node services at uber</h2>
+
+      <br>
+      <h4>Use `uber-statsd-client` for monitoring</h4>
+
+      <pre><code data-trim class="javascript">
+var Statsd = require('uber-statsd-client');
+
+var statsd = Statsd({ host: 'localhost', port: 5555 });
+
+statsd.increment('my-app.database-connection-died');
+statsd.increment('my-app.no-drivers-available');
+      </code></pre>
+    </section>
+    <section class="slide-11">
+      <h2>Node services at uber</h2>
+
+      <br>
+      <h4>Use `*-logtron` for logging</h4>
+
+      <pre><code data-trim class="javascript" style='font-size: 18px; line-height: 19px'>
+var Logtron = require('logtron');
+
+var logger = Logtron({ meta: {
+    team: 'my-team',
+    project: 'my-app'
+} });
+
+logger.error('unexpected failure in fetching city', {
+    err: err,
+    cityId: cityId,
+    cityName: cityName
+});
+
+logger.warn('Got a bad response for city request', {
+    response: buffer.toString().slice(0, 50),
+    cityId: cityId,
+    cityName: cityName
+});
+      </code></pre>
+    </section>
+    </section>
+    <section>
+    <section class="slide-12">
+      <h2>Cool shit you can do in node</h2>
+    </section>
+    <section class="slide-13">
+      <h2>Ringpop</h2>
+
+      <br>
+      <ul>
+        <li>Consistent hash ring for a cluster</li>
+        <li>Trivial leader election</li>
+        <li>In memory queues</li>
+        <li>In memory locks</li>
+      </ul>
+    </section>
+    <section class="slide-14">
+      <h2>TChannel</h2>
+
+      <br>
+      <ul>
+        <li>Supports structure RPC with thrift</li>
+        <li>Can do bidirectional p2p communication</li>
+        <li>Supports multiplexing streaming</li>
+      </ul>
+    </section>
+    <section class="slide-15">
+      <h2>node-stap and mdb</h2>
+
+      <br>
+      <ul>
+        <li>Deep system level debugging</li>
+        <li>Insight into actual production performance</li>
+        <li>See exactly what went wrong in production</li>
+      </ul>
+    </section>
+    </section>
+
+    <section class="slide-15">
+      <h1>Questions and answers</h1>
+
+      <br><br>
+      <h3>Bring it</h3>
+    </section>
+
+
+
+<!-- 
     <section class="slide-4">
       <h2>Just "productionize" it</h2>
 
@@ -240,15 +401,7 @@ document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.se
 
       <h3>DO IT LIVE.</h3>
     </section>
-
-    <section class="slide-16">
-      <h1>Thanks.</h1>
-
-      <h3><a href="http://twitter.com/raynos">@Raynos</a></h3>
-      <br>
-      <h3>Oh, and we're hiring:</h3>
-      <h3>jakev@uber.com</h3>
-    </section>
+ -->
 
     <!-- Talk (npm):
 
